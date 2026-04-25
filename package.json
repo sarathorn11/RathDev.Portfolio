@@ -4,6 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "homepage": "https://sarathorn11.github.io/RathDev.Portfolio/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarathorn11/RathDev.Portfolio.git"
+  },
+  "author": "Sarath Orn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sarathorn11/RathDev.Portfolio/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
