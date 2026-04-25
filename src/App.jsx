@@ -28,10 +28,20 @@ function App() {
         </footer>
       )}
 
-      {/* Hidden CV template for printing only */}
-      <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -100, opacity: isExporting ? 1 : 0, pointerEvents: 'none' }}>
+      {/* Hidden CV template for printing only - positioned off-screen but stays in DOM for capture */}
+      <div 
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: isExporting ? '0' : '-9999px', 
+          zIndex: isExporting ? 9999 : -100, 
+          opacity: 1, // Keep opacity 1 for capture
+          backgroundColor: 'white'
+        }}
+      >
         <PrintCV />
       </div>
+
     </div>
   );
 }

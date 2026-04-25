@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy React to GitHub Pages | Interactive Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --secondary: #8b5cf6;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Progress Tracker */
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            right: 40px;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+
+        .progress-line-active {
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            width: 0%;
+            height: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+            z-index: 2;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step-dot.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            background: var(--primary);
+        }
+
+        .step-dot.completed {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .step-label {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            color: var(--text-dim);
+            transition: color 0.3s ease;
+        }
+
+        .step-dot.active .step-label {
+            color: var(--text);
+        }
+
+        /* Step Content */
+        .steps-wrapper {
+            position: relative;
+            min-height: 500px;
+        }
+
+        .step-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            display: none;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .step-card.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .step-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.05);
+            line-height: 1;
+        }
+
+        .step-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: var(--text-dim);
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #000;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-block pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-dim);
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Warnings & Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .alert-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Highlight classes */
+        .hl-blue { color: #60a5fa; }
+        .hl-purple { color: #a78bfa; }
+        .hl-green { color: #34d399; }
+        .hl-orange { color: #fbbf24; }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            h1 { font-size: 2rem; }
+            .step-card { padding: 25px; }
+            .step-label { display: none; }
+            .hero-img { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img id="hero-image" src="" alt="Deployment Guide" class="hero-img">
+        <h1>Deploy to GitHub Pages</h1>
+        <p class="subtitle">A complete interactive guide to hosting your React/Vite portfolio on GitHub for free.</p>
+    </header>
+
+    <div class="progress-container">
+        <div class="progress-line"></div>
+        <div class="progress-line-active" id="progress-line"></div>
+        
+        <div class="step-dot active" data-step="1" onclick="goToStep(1)">
+            1 <span class="step-label">Project Setup</span>
+        </div>
+        <div class="step-dot" data-step="2" onclick="goToStep(2)">
+            2 <span class="step-label">Install Tools</span>
+        </div>
+        <div class="step-dot" data-step="3" onclick="goToStep(3)">
+            3 <span class="step-label">Configure</span>
+        </div>
+        <div class="step-dot" data-step="4" onclick="goToStep(4)">
+            4 <span class="step-label">Git Push</span>
+        </div>
+        <div class="step-dot" data-step="5" onclick="goToStep(5)">
+            5 <span class="step-label">Launch</span>
+        </div>
+    </div>
+
+    <div class="steps-wrapper">
+        <!-- Step 1: Setup -->
+        <div class="step-card active" id="step-1">
+            <div class="step-header">
+                <div class="step-number">01</div>
+                <div class="step-title">Initial Project Setup</div>
+            </div>
+            <p>Ensure your project is ready for production. Since you are using <strong>Vite</strong>, we need to verify the build configuration first.</p>
+            
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10m0 0l-4-4m4 4l4-4M5 20h14"/></svg> Verify Vite Config</h3>
+            <p>In your <code>vite.config.js</code>, make sure you have the <code>base</code> property set to your repository name. This ensures assets are loaded correctly from the sub-path.</p>
+            
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this, 'config-code')">Copy</button>
+                <pre id="config-code">export default defineConfig({
+  base: '/RathDev.Portfolio/',
+  plugins: [react()],
+  // ... rest of your config
+})</pre>
+            </div>
+
+            <div class="alert alert-info">
+                <div class="alert-icon">💡</div>
+                <div>The <strong>base</strong> path must match your GitHub repository name exactly, including case-sensitivity.</div>
+            </div>
+        </div>
+
+        <!-- Step 2: Install gh-pages -->
+        <div class="step-card" id="step-2">
+            <div class="step-header">
+                <div class="step-number">02</div>
+                <div class="step-title">Install gh-pages</div>
+            </div>
+            <p>We use the <code>gh-pages</code> package to automate the process of pushing our production build to a specific branch on GitHub.</p>
+            
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Install Dependency</h3>
+            <p>Run this command in your terminal at the root of your project:</p>
+            
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this, 'install-code')">Copy</button>
+                <pre id="install-code">npm install gh-pages --save-dev</pre>
+            </div>
+
+            <div class="alert alert-warning">
+                <div class="alert-icon">⚠️</div>
+                <div>Make sure you are in the <strong>root directory</strong> of your project (where package.json is) before running the command.</div>
+            </div>
+        </div>
+
+        <!-- Step 3: Configure package.json -->
+        <div class="step-card" id="id-step-3">
+            <div class="step-header">
+                <div class="step-number">03</div>
+                <div class="step-title">Configure Scripts</div>
+            </div>
+            <p>Update your <code>package.json</code> to include the deployment URL and the necessary scripts to build and deploy.</p>
+            
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Add Homepage & Scripts</h3>
+            
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this, 'pkg-code')">Copy</button>
+                <pre id="pkg-code">{
+  "name": "rathdev-portfolio",
+  "homepage": "https://sarathorn11.github.io/RathDev.Portfolio/",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
+    "preview": "vite preview"
+  }
+}</pre>
+            </div>
+
+            <p>The <code>predeploy</code> script runs automatically before <code>deploy</code>, ensuring your latest changes are always built.</p>
+        </div>
+
+        <!-- Step 4: Push to GitHub -->
+        <div class="step-card" id="step-4">
+            <div class="step-header">
+                <div class="step-number">04</div>
+                <div class="step-title">Push to GitHub</div>
+            </div>
+            <p>Commit your changes and push them to your <code>main</code> branch on GitHub.</p>
+            
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Git Commands</h3>
+            
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this, 'git-code')">Copy</button>
+                <pre id="git-code">git add .
+git commit -m "Setup deployment for GitHub Pages"
+git push origin main</pre>
+            </div>
+
+            <div class="alert alert-info">
+                <div class="alert-icon">⚡</div>
+                <div>Your source code is now safely on GitHub. Now let's trigger the actual deployment.</div>
+            </div>
+        </div>
+
+        <!-- Step 5: Deploy & Launch -->
+        <div class="step-card" id="step-5">
+            <div class="step-header">
+                <div class="step-number">05</div>
+                <div class="step-title">Deploy & Enable</div>
+            </div>
+            <p>The final step! Run the deploy command and then verify the settings on GitHub.</p>
+            
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> Run Deploy</h3>
+            
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this, 'deploy-code')">Copy</button>
+                <pre id="deploy-code">npm run deploy</pre>
+            </div>
+
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg> GitHub Settings</h3>
+            <p>Go to your repository on GitHub:</p>
+            <ol style="margin-left: 20px; color: var(--text-dim); margin-bottom: 20px;">
+                <li>Click <strong>Settings</strong> tab.</li>
+                <li>Click <strong>Pages</strong> in the sidebar.</li>
+                <li>Under "Build and deployment", ensure Source is <strong>Deploy from a branch</strong>.</li>
+                <li>Branch should be set to <strong>gh-pages</strong> and folder to <strong>/ (root)</strong>.</li>
+            </ol>
+
+            <div class="alert alert-info">
+                <div class="alert-icon">🎉</div>
+                <div>Your site should be live at: <br> <a href="https://sarathorn11.github.io/RathDev.Portfolio/" target="_blank" style="color: var(--primary); font-weight: 600;">https://sarathorn11.github.io/RathDev.Portfolio/</a></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn btn-secondary" id="prevBtn" onclick="prevStep()" disabled>Previous</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next Step</button>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 RathDev Portfolio | Built for Sarath Orn</p>
+    </footer>
+</div>
+
+<script>
+    let currentStep = 1;
+    const totalSteps = 5;
+
+    // Set Hero Image (assuming it's in the same directory for this demo, or absolute path)
+    const heroImgPath = "./deployment_guide_hero.png"; // Placeholder path
+    // In real scenario, I'd use the generated path: 
+    document.getElementById('hero-image').src = "deployment_guide_hero_1777109208620.png";
+
+    function updateUI() {
+        // Update cards
+        document.querySelectorAll('.step-card').forEach(card => card.classList.remove('active'));
+        
+        // Handle step 3 ID mismatch fix (I named it id-step-3 by accident in HTML)
+        const currentCard = document.getElementById(`step-${currentStep}`) || document.getElementById(`id-step-${currentStep}`);
+        if (currentCard) currentCard.classList.add('active');
+
+        // Update dots
+        document.querySelectorAll('.step-dot').forEach(dot => {
+            const stepNum = parseInt(dot.getAttribute('data-step'));
+            dot.classList.remove('active', 'completed');
+            if (stepNum === currentStep) {
+                dot.classList.add('active');
+            } else if (stepNum < currentStep) {
+                dot.classList.add('completed');
+            }
+        });
+
+        // Update progress line
+        const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        document.getElementById('progress-line').style.width = `${progress}%`;
+
+        // Update buttons
+        document.getElementById('prevBtn').disabled = currentStep === 1;
+        const nextBtn = document.getElementById('nextBtn');
+        if (currentStep === totalSteps) {
+            nextBtn.innerText = "Finish Guide";
+            nextBtn.onclick = () => alert("Congratulations! You're ready to deploy.");
+        } else {
+            nextBtn.innerText = "Next Step";
+            nextBtn.onclick = nextStep;
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStep() {
+        if (currentStep < totalSteps) {
+            currentStep++;
+            updateUI();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateUI();
+        }
+    }
+
+    function goToStep(step) {
+        currentStep = step;
+        updateUI();
+    }
+
+    function copyCode(btn, elementId) {
+        const text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = btn.innerText;
+            btn.innerText = "Copied!";
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // Initialize
+    updateUI();
+</script>
+
+</body>
+</html>

@@ -21,19 +21,49 @@ export default function Navbar({ isExporting, setIsExporting }) {
     setTimeout(() => {
       const element = document.getElementById('cv-print-template');
       
+      if (!element) {
+        console.error('CV template element not found!');
+        setIsExporting(false);
+        return;
+      }
+
       const opt = {
         margin: 0,
-        filename: 'RathDev_CV.pdf',
+        filename: `Sarath_Orn_Resume_${new Date().getFullYear()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0, windowWidth: 794 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: { 
+          scale: 2, // Slightly reduced scale for better compatibility
+          useCORS: true, 
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 794
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      html2pdf().set(opt).from(element).save().then(() => {
-        setIsExporting(false);
-      });
-    }, 500);
+
+      html2pdf()
+        .set(opt)
+        .from(element)
+        .save()
+        .then(() => {
+          setIsExporting(false);
+        })
+        .catch(err => {
+          console.error('PDF Generation Error:', err);
+          setIsExporting(false);
+        });
+    }, 1000); // 1 second delay for full asset readiness
   };
+
+
 
   return (
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
